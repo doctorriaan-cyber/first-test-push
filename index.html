@@ -12,18 +12,6 @@
     body {
       background-color: #111827; /* bg-gray-900 */
     }
-    .water {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      overflow: hidden;
-    }
-    .waves {
-      position: relative;
-      width: 100%;
-      height: 100%; /* Allow SVG to fill the container */
-    }
     .parallax > use {
       animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
     }
@@ -65,7 +53,7 @@
 
       const handleClick = () => {
         setIsGreen(!isGreen);
-        setCount(prevCount => prevCount + 1);
+        setCount(prevCount => Math.min(prevCount + 1, 30));
       };
       
       const handleReset = () => {
@@ -73,52 +61,80 @@
         setCount(0);
       };
 
-      const waterHeight = Math.min((count / 30) * 100, 100);
+      const fillPercentage = count / 30;
+      // Define the top and bottom Y coordinates of the fillable area.
+      const glassBowlTop = 6;
+      const glassBowlBottom = 75;
+      const travelDistance = glassBowlBottom - glassBowlTop;
+      // Calculate the water's Y position. It starts at the bottom and moves up.
+      const waterYPosition = glassBowlBottom - (travelDistance * fillPercentage);
 
       return (
-        <div className="relative w-screen h-screen overflow-hidden">
-          {/* Water Animation */}
-          <div
-            className="water"
-            style={{ 
-              height: `${waterHeight}%`,
-            }}
-          >
-            <svg className="waves" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
-              viewBox="0 0 150 100" preserveAspectRatio="none" shapeRendering="auto">
-              <defs>
-                <path id="gentle-wave" d="M-160 20c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v80h-352z" />
-              </defs>
-              <g className="parallax">
-                <use xlinkHref="#gentle-wave" x="48" y="0" fill="rgba(59,130,246,0.7)" />
-                <use xlinkHref="#gentle-wave" x="48" y="3" fill="rgba(59,130,246,0.5)" />
-                <use xlinkHref="#gentle-wave" x="48" y="5" fill="rgba(59,130,246,0.3)" />
-                <use xlinkHref="#gentle-wave" x="48" y="7" fill="#3B82F6" />
-              </g>
-            </svg>
-          </div>
-
-          {/* Main Content */}
-          <main className="relative z-10 w-full h-full flex flex-col justify-center items-center p-4 text-center">
-            <h1 className="text-8xl font-bold text-white mb-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+        <div className="relative w-screen h-screen overflow-hidden flex flex-col justify-center items-center p-4">
+          
+          <main className="relative z-10 w-full flex flex-col justify-center items-center text-center">
+            
+            <h1 className="text-8xl font-bold text-white mb-2" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
               {count}
             </h1>
-            <button
-              onClick={handleClick}
-              className={`w-48 h-48 rounded-full text-white text-3xl font-bold shadow-lg transform transition-transform duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50 ${
-                isGreen
-                  ? 'bg-green-500 hover:bg-green-600 focus:ring-green-400'
-                  : 'bg-red-500 hover:bg-red-600 focus:ring-red-400'
-              }`}
-            >
-              Push Me
-            </button>
-            <button
-              onClick={handleReset}
-              className="mt-8 px-6 py-2 rounded-full text-gray-400 border border-gray-600 hover:text-white hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Reset
-            </button>
+
+            <div className="w-64 h-96 relative">
+              <svg viewBox="0 0 100 150" className="w-full h-full">
+                <defs>
+                  <clipPath id="glass-mask">
+                    {/* This path defines the inner area of the glass bowl */}
+                    <path d="M28,6 C28,35 35,68 50,75 C65,68 72,35 72,6 Z" />
+                  </clipPath>
+                  
+                  {/* Taller wave path to prevent gap at the bottom */}
+                  <path id="gentle-wave" d="M-160 5c30 0 58-5 88-5s58 5 88 5 58-5 88 5 58 5 88 5v150h-352z" />
+                </defs>
+
+                {/* The water that fills the glass, clipped by the mask */}
+                <g clipPath="url(#glass-mask)">
+                  <g className="parallax" transform={`translate(0, ${waterYPosition})`}>
+                    <use xlinkHref="#gentle-wave" x="48" y="0" fill="rgba(59,130,246,0.7)" />
+                    <use xlinkHref="#gentle-wave" x="48" y="2" fill="rgba(59,130,246,0.5)" />
+                    <use xlinkHref="#gentle-wave" x="48" y="3" fill="rgba(59,130,246,0.3)" />
+                    <use xlinkHref="#gentle-wave" x="48" y="5" fill="#3B82F6" />
+                  </g>
+                </g>
+                
+                {/* The glass shape itself - redrawn for a classic look */}
+                <g fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.75">
+                  <path d="M 25,5 H 75 C 75,35 70,68 50,75 C 30,68 25,35 25,5 Z" />
+                  <path d="M 50,75 V 130" />
+                  <path d="M 30,140 H 70 C 65,132 35,132 30,140 Z" />
+                </g>
+
+                {/* Highlights */}
+                <path d="M 75 5 C 70 20 65 35 68 50" stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none" />
+                <path d="M 25 5 L 75 5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" />
+
+              </svg>
+            </div>
+
+            <div className="mt-6 flex flex-col items-center">
+              <button
+                onClick={handleClick}
+                className={`w-48 h-48 rounded-full text-white text-3xl font-bold shadow-lg transform transition-transform duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50 ${
+                  count >= 30 
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : isGreen
+                      ? 'bg-green-500 hover:bg-green-600 focus:ring-green-400'
+                      : 'bg-red-500 hover:bg-red-600 focus:ring-red-400'
+                }`}
+                disabled={count >= 30}
+              >
+                Push Me
+              </button>
+              <button
+                onClick={handleReset}
+                className="mt-8 px-6 py-2 rounded-full text-gray-400 border border-gray-600 hover:text-white hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Reset
+              </button>
+            </div>
           </main>
         </div>
       );
