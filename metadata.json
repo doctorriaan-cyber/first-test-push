@@ -1,0 +1,5 @@
+{
+  "name": "Color Toggle Button",
+  "description": "A simple web application featuring a single button that toggles its color between green and red when pressed. Designed for mobile use.",
+  "requestFramePermissions": []
+}
