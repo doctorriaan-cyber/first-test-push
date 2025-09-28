@@ -1,80 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Color Toggle Button</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use a standard and reliable CDN for React modules -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.3.1",
-          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
-        }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Toggle Button</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #111827; /* bg-gray-900 */
+    }
+    .water {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+    }
+    .waves {
+      position: relative;
+      width: 100%;
+      height: 100%; /* Allow SVG to fill the container */
+    }
+    .parallax > use {
+      animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+    }
+    .parallax > use:nth-child(1) {
+      animation-delay: -2s;
+      animation-duration: 7s;
+    }
+    .parallax > use:nth-child(2) {
+      animation-delay: -3s;
+      animation-duration: 10s;
+    }
+    .parallax > use:nth-child(3) {
+      animation-delay: -4s;
+      animation-duration: 13s;
+    }
+    .parallax > use:nth-child(4) {
+      animation-delay: -5s;
+      animation-duration: 20s;
+    }
+    @keyframes move-forever {
+      0% {
+        transform: translate3d(-90px, 0, 0);
       }
-    </script>
-    <!-- Load Babel to transpile JSX in the browser -->
-    <script src="https://unpkg.com/@babel/standalone@7.24.9/babel.min.js"></script>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!-- 
-      All application code is now inside this script tag.
-      'type="text/babel"' tells Babel to transpile it before running.
-      This allows using JSX and modern JS features directly in the browser
-      without a separate build step.
-    -->
-    <script type="text/babel" data-type="module">
-      import React, { useState } from 'react';
-      import { createRoot } from 'react-dom/client';
+      100% {
+        transform: translate3d(85px, 0, 0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-      // The App component, previously in App.tsx
-      const App = () => {
-        // State to track the button's color. `true` for green, `false` for red.
-        const [isGreen, setIsGreen] = useState(true);
+  <script type="text/babel">
+    const { useState } = React;
 
-        // Handler to toggle the color state when the button is clicked.
-        const handleToggleClick = () => {
-          setIsGreen(prevState => !prevState);
-        };
+    function App() {
+      const [isGreen, setIsGreen] = useState(true);
+      const [count, setCount] = useState(0);
 
-        // Base classes for the button for consistent styling.
-        const buttonBaseClasses = 'text-white font-bold py-6 px-12 rounded-full text-3xl shadow-2xl transform transition-all duration-300 ease-in-out focus:outline-none focus:ring-8 active:scale-95';
+      const handleClick = () => {
+        setIsGreen(!isGreen);
+        setCount(prevCount => prevCount + 1);
+      };
+      
+      const handleReset = () => {
+        setIsGreen(true);
+        setCount(0);
+      };
 
-        // Dynamic classes that change based on the `isGreen` state.
-        const buttonColorClasses = isGreen
-          ? 'bg-green-500 hover:bg-green-600 focus:ring-green-300'
-          : 'bg-red-500 hover:bg-red-600 focus:ring-red-300';
+      const waterHeight = Math.min((count / 30) * 100, 100);
 
-        return (
-          // A full-screen container using flexbox to center the button perfectly.
-          // The dark background makes the button colors pop.
-          <main className="bg-gray-900 min-h-screen flex items-center justify-center antialiased">
+      return (
+        <div className="relative w-screen h-screen overflow-hidden">
+          {/* Water Animation */}
+          <div
+            className="water"
+            style={{ 
+              height: `${waterHeight}%`,
+            }}
+          >
+            <svg className="waves" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
+              viewBox="0 0 150 100" preserveAspectRatio="none" shapeRendering="auto">
+              <defs>
+                <path id="gentle-wave" d="M-160 20c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v80h-352z" />
+              </defs>
+              <g className="parallax">
+                <use xlinkHref="#gentle-wave" x="48" y="0" fill="rgba(59,130,246,0.7)" />
+                <use xlinkHref="#gentle-wave" x="48" y="3" fill="rgba(59,130,246,0.5)" />
+                <use xlinkHref="#gentle-wave" x="48" y="5" fill="rgba(59,130,246,0.3)" />
+                <use xlinkHref="#gentle-wave" x="48" y="7" fill="#3B82F6" />
+              </g>
+            </svg>
+          </div>
+
+          {/* Main Content */}
+          <main className="relative z-10 w-full h-full flex flex-col justify-center items-center p-4 text-center">
+            <h1 className="text-8xl font-bold text-white mb-8" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+              {count}
+            </h1>
             <button
-              onClick={handleToggleClick}
-              className={`${buttonBaseClasses} ${buttonColorClasses}`}
-              aria-label={isGreen ? 'Change color to red' : 'Change color to green'}
+              onClick={handleClick}
+              className={`w-48 h-48 rounded-full text-white text-3xl font-bold shadow-lg transform transition-transform duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-opacity-50 ${
+                isGreen
+                  ? 'bg-green-500 hover:bg-green-600 focus:ring-green-400'
+                  : 'bg-red-500 hover:bg-red-600 focus:ring-red-400'
+              }`}
             >
               Push Me
             </button>
+            <button
+              onClick={handleReset}
+              className="mt-8 px-6 py-2 rounded-full text-gray-400 border border-gray-600 hover:text-white hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Reset
+            </button>
           </main>
-        );
-      };
-
-      // The rendering logic, previously in index.tsx
-      const rootElement = document.getElementById('root');
-      if (!rootElement) {
-        throw new Error("Could not find root element to mount to");
-      }
-
-      const root = createRoot(rootElement);
-      root.render(
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
+        </div>
       );
-    </script>
-  </body>
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
 </html>
